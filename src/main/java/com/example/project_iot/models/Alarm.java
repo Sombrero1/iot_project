@@ -4,26 +4,22 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Objects;
 
 public class Alarm {
-    String name;
-    int id;
-    Double[] geo;
+    private String name;
+    private int id;
+    private Double[] geo;
     private static SimpleDateFormat format;
-    boolean []days; //массив на 7 элементов
+    private boolean []days; //массив на 7 элементов
+    private boolean selected;
 
-    public Alarm() {
-    }
+
     static {
         format = new SimpleDateFormat("HH:mm");
     }
 
-    public Alarm(String name, int id, Double[] geo, boolean days[]) {
-        this.name = name;
-        this.id = id;
-        this.geo = geo;
-        this.days = days;
-    }
+
 
     public final Double[] getGeo() {
         return geo;
@@ -70,6 +66,39 @@ public class Alarm {
                 ", id=" + id +
                 ", geo=" + Arrays.toString(geo) +
                 ", days=" + Arrays.toString(days) +
+                ", selected=" + selected +
                 '}';
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Alarm alarm = (Alarm) o;
+        return id == alarm.id &&
+                selected == alarm.selected &&
+                Objects.equals(name, alarm.name) &&
+                Arrays.equals(geo, alarm.geo) &&
+                Arrays.equals(days, alarm.days);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(name, id, selected);
+        result = 31 * result + Arrays.hashCode(geo);
+        result = 31 * result + Arrays.hashCode(days);
+        return result;
+    }
+
+    public void setDays(boolean[] days) {
+        this.days = days;
     }
 }

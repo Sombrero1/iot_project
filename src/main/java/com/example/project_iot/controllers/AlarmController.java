@@ -7,23 +7,52 @@ import com.example.project_iot.models.Alarm;
 import com.example.project_iot.repo.FakeDB;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Iterator;
 
 @RestController
+@RequestMapping("/clocks")
 public class AlarmController {
     @Autowired
     RestService restService;
 
-    @PostMapping("/put_clock")
-    public Alarm putAlarm(@RequestBody Alarm alarm){
-
-        System.out.println(alarm.getName() +" "+ alarm.getId() +" "+alarm.getGeo()[0]+" "+alarm.getGeo()[1]+" "+alarm.getGeo()[2]+" "+alarm.getGeo()[3]+alarm.getDays()[0]);
+    @PostMapping()
+    public void addAlarm(@RequestBody Alarm alarm){
+        System.out.print("post : ");
         System.out.println(alarm);
-        FakeDB.alarms.clear();
+//        FakeDB.alarms.clear();
         FakeDB.alarms.add(alarm);
+    }
 
-        return alarm;
+    @PutMapping("/{id}")
+    public void putAlarm(@PathVariable int id,@RequestBody Alarm alarm){
+        System.out.println("put : "+id);
+        System.out.println(alarm);
+        for (Alarm temp: FakeDB.alarms
+             ) {
+            if(temp.getId() == id){
+                temp.setName(alarm.getName());
+                temp.setGeo(alarm.getGeo());
+                temp.setSelected(alarm.isSelected());
+                temp.setDays(alarm.getDays());
+            }
+
+        }
+
+
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteAlarm(@PathVariable int id){
+        System.out.print("delete : " + id);
+
+        Iterator<Alarm> iterator =  FakeDB.alarms.iterator();
+        while (iterator.hasNext()){
+            if(iterator.next().getId()==id){
+                iterator.remove();
+                break;
+            };
+        }
     }
 }

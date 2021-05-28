@@ -13,8 +13,7 @@ import java.util.NoSuchElementException;
 
 @Service
 public class Notification {
-    @Autowired
-    private FakeDB fakeDB;
+
 
     @Autowired
     RestService restService;
@@ -28,18 +27,24 @@ public class Notification {
 
 //        System.out.println(now);
 //        System.out.println( fakeDB.alarms.get(0).getTimestamp());
+        for (Alarm temp:FakeDB.alarms
+             ) {
+            System.out.println(temp);
 
-        Alarm findAlarm = fakeDB.alarms.stream().
-                filter(x -> (x.getDays()[(dayOfWeek-2)%7] && x.getTimestamp()> now)).
-                findAny().
-                orElse(null);
+
+        }
+
+        Alarm findAlarm = FakeDB.alarms.stream().
+                filter(x -> (x.getDays()[(dayOfWeek-2)%7] && x.getTimestamp()> now && x.isSelected()))
+                .min(Comparator.comparing(Alarm::getTimestamp))
+                .orElse(null);
 
         if (findAlarm!=null) return  findAlarm;
 
 
             for (int i = dayOfWeek+1; i<=dayOfWeek+7; i++){
                 final int numberObWeek = (i -2)%7;
-                findAlarm = fakeDB.alarms.stream().filter(x -> (x.getDays()[numberObWeek]))
+                findAlarm = FakeDB.alarms.stream().filter(x -> (x.getDays()[numberObWeek]&& x.isSelected()))
                         .min(Comparator.comparing(Alarm::getTimestamp))
                         .orElse(null);
                 if (findAlarm!=null) return  findAlarm;
@@ -48,19 +53,17 @@ public class Notification {
     }
 
 
-    private Integer getNotificationMode(Alarm alarm, int dayOfWeek, int now, String mode){
+    private long getNotificationMode(Alarm alarm, int dayOfWeek, int now, String mode){
         //Выяснять время машрута
-        Integer notification = -1;
+        long notification = -1;
         String answer = restService.getPostsPlainJSON(alarm.getGeo(),mode);//также другие режимы
         long seconds_route = getSeconds(answer);
         long upper = alarm.getTimestamp();
-        if((alarm.getDays()[dayOfWeek-2]) && (seconds_route+now>upper))notification=0;//рассмотреть случай в 1:00
-        if((alarm.getDays()[dayOfWeek-2]) && (seconds_route+now<upper))notification=1;//рассмотреть случай в 1:00
-        if((alarm.getDays()[dayOfWeek-2]) && (seconds_route+now+15*60<upper))notification=2;//рассмотреть случай в 1:00
-        if((alarm.getDays()[dayOfWeek-2]) && (seconds_route+now+30*60<upper))notification=3;//рассмотреть случай в 1:00
-
+        if((alarm.getDays()[dayOfWeek-2])) {
+            notification = (upper - (seconds_route + now))/60;//рассмотреть случай в 1:00
+            if (notification<0) notification = 0;
+        }
         return notification;
-
     }
 
 
@@ -86,7 +89,7 @@ public class Notification {
 
 
 
-    public ResponceRoute responceForNucleo(int userId){
+    public ResponceRoute responceForNucleo(int userId) throws NoSuchElementException{
         Alarm alarm = getNearNotification(userId);
         if(alarm == null) throw new NoSuchElementException("Нет таких элементов");
         ResponceRoute responceRoute = new ResponceRoute();
@@ -98,7 +101,7 @@ public class Notification {
 
         responceRoute.setWalking(getNotificationMode(alarm, dayOfWeek,now,"walking"));
         responceRoute.setTransit(getNotificationMode(alarm, dayOfWeek,now,"transit"));
-        responceRoute.setDriving(  getNotificationMode(alarm, dayOfWeek,now,"driving"));
+        responceRoute.setDriving(getNotificationMode(alarm, dayOfWeek,now,"driving"));
         System.out.println(responceRoute);
 
         return responceRoute;

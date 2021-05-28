@@ -4,9 +4,9 @@ import lombok.Data;
 
 @Data
 public class ResponceRoute {
-    private int walking;
-    private int transit;
-    private int driving;
+    private long walking;
+    private long transit;
+    private long driving;
 
 
     @Override
