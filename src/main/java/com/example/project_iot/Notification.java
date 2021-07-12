@@ -4,8 +4,17 @@ import com.example.project_iot.models.Alarm;
 import com.example.project_iot.models.ResponceRoute;
 import com.example.project_iot.repo.FakeDB;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RequestCallback;
+import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
@@ -13,13 +22,11 @@ import java.util.NoSuchElementException;
 
 @Service
 public class Notification {
-
-
     @Autowired
     RestService restService;
 
 
-    private Alarm getNearNotification(int userId) {
+    public Alarm getNearNotification(int userId) {
         int dayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);//должна быть работы только с карточками юзера
 
         Date date = new Date();
@@ -35,7 +42,7 @@ public class Notification {
         }
 
         Alarm findAlarm = FakeDB.alarms.stream().
-                filter(x -> (x.getDays()[(dayOfWeek-2)%7] && x.getTimestamp()> now && x.isSelected()))
+                filter(x -> (x.getDays()[((dayOfWeek-2)%7+7)%7] && x.getTimestamp()> now && x.isSelected()))
                 .min(Comparator.comparing(Alarm::getTimestamp))
                 .orElse(null);
 
@@ -51,15 +58,27 @@ public class Notification {
     }
         return null;
     }
+    public static void main(String[] args) throws IOException, InterruptedException {
+        getWeather(10,10);
+    }
+
+    private static int getWeather(double latitude, double longitude) throws IOException, InterruptedException {
+        RestTemplate restTemplate = new RestTemplate();
+        String url  = "https://api.openweathermap.org/data/2.5/onecall?lat=30&lon=30&appid=bdfddada1ad52adf4f1786c07848d0ef";
 
 
-    private long getNotificationMode(Alarm alarm, int dayOfWeek, int now, String mode){
+        return 0;
+    }
+
+
+    public long getNotificationMode(Alarm alarm, int dayOfWeek, int now, String mode){
         //Выяснять время машрута
+        now += 3600*3%(3600*24);
         long notification = -1;
         String answer = restService.getPostsPlainJSON(alarm.getGeo(),mode);//также другие режимы
         long seconds_route = getSeconds(answer);
         long upper = alarm.getTimestamp();
-        if((alarm.getDays()[dayOfWeek-2])) {
+        if((alarm.getDays()[(dayOfWeek-2+7)%7])) {
             notification = (upper - (seconds_route + now))/60;//рассмотреть случай в 1:00
             if (notification<0) notification = 0;
         }
@@ -92,19 +111,45 @@ public class Notification {
     public ResponceRoute responceForNucleo(int userId) throws NoSuchElementException{
         Alarm alarm = getNearNotification(userId);
         if(alarm == null) throw new NoSuchElementException("Нет таких элементов");
+
         ResponceRoute responceRoute = new ResponceRoute();
 
         Date date = new Date();
         int now = date.getHours()*3600+date.getMinutes()*60+date.getSeconds();
         int dayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
 
-
         responceRoute.setWalking(getNotificationMode(alarm, dayOfWeek,now,"walking"));
         responceRoute.setTransit(getNotificationMode(alarm, dayOfWeek,now,"transit"));
         responceRoute.setDriving(getNotificationMode(alarm, dayOfWeek,now,"driving"));
+        responceRoute.setIdAlarm(alarm.getId());
         System.out.println(responceRoute);
 
         return responceRoute;
+    }
+
+    private String mapper(String form){
+        if(form.equals("машиной")
+                || form.equals("на машине")
+                || form.equals("машина")) return "driving";
+
+        if(form.equals("пешком")) return "walking";
+
+        if(form.equals("публичным транспортом")
+                || form.equals("маршруткой")
+                || form.equals("общественным транспортом")) return "transit";
+        return "walking";
+    }
+
+    public long responceForAlice(String mode) throws NoSuchElementException{
+        Alarm alarm = getNearNotification(3);
+        if(alarm == null) throw new NoSuchElementException("Нет таких элементов");
+        Date date = new Date();
+        int now = date.getHours()*3600+date.getMinutes()*60+date.getSeconds();
+        int dayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+        long g = getNotificationMode(alarm, dayOfWeek,now,
+                mapper(mode).toString());
+        return g;
+
     }
 
 }

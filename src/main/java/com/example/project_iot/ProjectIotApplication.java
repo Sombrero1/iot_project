@@ -3,6 +3,9 @@ package com.example.project_iot;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import javax.annotation.PostConstruct;
+import java.util.TimeZone;
+
 @SpringBootApplication
 public class ProjectIotApplication {
 
@@ -10,5 +13,6 @@ public class ProjectIotApplication {
 		SpringApplication.run(ProjectIotApplication.class, args);
 
 	}
+
 
 }

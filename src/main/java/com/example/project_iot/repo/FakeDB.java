@@ -9,4 +9,5 @@ import java.util.ArrayList;
 @Repository
 public class FakeDB {
     public static ArrayList<Alarm> alarms = new ArrayList<>();
+    public static int id = 11;
 }
