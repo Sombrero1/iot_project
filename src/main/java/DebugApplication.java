@@ -1,7 +1,4 @@
-import com.example.project_iot.Notification;
-import com.example.project_iot.models.Alarm;
-
-public class test_main_service {
+public class DebugApplication {
     public static void main(String[] args) {
 //        Notification notification = new Notification();
 //       // Alarm alarm = notification.getNearNotification(3);

@@ -1,25 +1,21 @@
 package com.example.project_iot.controllers;
 
-import com.example.project_iot.Notification;
-import com.example.project_iot.RestService;
+import com.example.project_iot.service.CalculateRouterService;
 import com.example.project_iot.models.ResponceRoute;
-import com.example.project_iot.repo.FakeDB;
 import com.google.gson.Gson;
-import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.TextMessage;
 
 import java.io.IOException;
-import java.net.http.WebSocketHandshakeException;
 import java.util.NoSuchElementException;
 
-public class MyHandler extends TextWebSocketHandler {
+public class DeviceHandler extends TextWebSocketHandler {
     @Autowired
     Gson gson;
     @Autowired
-    Notification notification;
+    CalculateRouterService calculateRouterService;
     private int count(ResponceRoute responceRoute){
         int c = 0;
         if (responceRoute.getDriving() == 0) c++;
@@ -38,23 +34,22 @@ public class MyHandler extends TextWebSocketHandler {
         while (session.isOpen()) {
             try{
                 try {
-                    ResponceRoute responceRoute = notification.responceForNucleo(3);
+                    ResponceRoute responceRoute = calculateRouterService.responceForNucleo(3);
                     if ( lastId != responceRoute.getIdAlarm()) {// и не был изменён
-                        lastCountBeeps = 0;
+                        lastCountBeeps = 0; // Убрать
                         beep = false;
                     }
 
                     int t = count(responceRoute);
-                    if (!beep && t>lastCountBeeps) {
+                    if (!beep && t>lastCountBeeps) { //убрать
                         lastCountBeeps = t;
-                        responceRoute.setBeep(1);
                         beep = true;
                     }
-                    //
+
                     String res = gson.toJson(responceRoute);
                     session.sendMessage(new TextMessage(res));
                     System.out.println(res);
-                    //
+
                     lastId = responceRoute.getIdAlarm();
 
                 }

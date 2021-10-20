@@ -8,28 +8,37 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
 
-public class Alarm {
+public class CalendarEvent {
     private String time;
     private int id;
     private Double[] geo;
     private static SimpleDateFormat format;
-    private boolean []days; //массив на 7 элементов
+    private boolean []days;
     private boolean selected;
+    private String desc;
 
-    public Alarm(){}
+    public CalendarEvent(){}
 
-    public Alarm(String time, int id, Double[] geo, boolean[] days, boolean selected) {
+    public CalendarEvent(String time, int id, Double[] geo, boolean[] days, boolean selected, String desc) {
         this.time = time;
         this.id = id;
         this.geo = geo;
         this.days = days;
         this.selected = selected;
+        this.desc = desc;
     }
 
     static {
         format = new SimpleDateFormat("HH:mm");
     }
 
+    public String getDesc() {
+        return desc;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
+    }
 
     public final Double[] getGeo() {
         return geo;
@@ -73,12 +82,13 @@ public class Alarm {
 
     @Override
     public String toString() {
-        return "Alarm{" +
+        return "CalendarEvent{" +
                 "time='" + time + '\'' +
                 ", id=" + id +
                 ", geo=" + Arrays.toString(geo) +
                 ", days=" + Arrays.toString(days) +
                 ", selected=" + selected +
+                ", desc='" + desc + '\'' +
                 '}';
     }
 
@@ -94,12 +104,12 @@ public class Alarm {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Alarm alarm = (Alarm) o;
-        return id == alarm.id &&
-                selected == alarm.selected &&
-                Objects.equals(time, alarm.time) &&
-                Arrays.equals(geo, alarm.geo) &&
-                Arrays.equals(days, alarm.days);
+        CalendarEvent calendarEvent = (CalendarEvent) o;
+        return id == calendarEvent.id &&
+                selected == calendarEvent.selected &&
+                Objects.equals(time, calendarEvent.time) &&
+                Arrays.equals(geo, calendarEvent.geo) &&
+                Arrays.equals(days, calendarEvent.days);
     }
 
     @Override

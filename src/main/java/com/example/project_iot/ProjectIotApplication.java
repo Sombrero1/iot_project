@@ -11,8 +11,6 @@ public class ProjectIotApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(ProjectIotApplication.class, args);
-
 	}
-
 
 }

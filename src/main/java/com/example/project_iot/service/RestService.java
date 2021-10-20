@@ -1,18 +1,10 @@
-package com.example.project_iot;
+package com.example.project_iot.service;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import org.apache.tomcat.util.json.JSONParser;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.Iterator;
-import java.util.TreeSet;
 
 @Service
 public class RestService {

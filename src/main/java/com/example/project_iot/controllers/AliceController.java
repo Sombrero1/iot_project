@@ -1,13 +1,10 @@
 package com.example.project_iot.controllers;
 
-import com.example.project_iot.Notification;
-import com.example.project_iot.models.Alarm;
-import com.example.project_iot.repo.FakeDB;
+import com.example.project_iot.service.CalculateRouterService;
+import com.example.project_iot.models.CalendarEvent;
+import com.example.project_iot.repo.DevelopDB;
 import com.example.project_iot.service.ParsingAddressByGeocoder;
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonView;
-import com.google.gson.JsonObject;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +17,7 @@ import java.util.*;
 @RestController
 public class AliceController {
     @Autowired
-    Notification notification;
+    CalculateRouterService calculateRouterService;
 
     @Autowired
     ParsingAddressByGeocoder parsingAddress;
@@ -39,7 +36,6 @@ public class AliceController {
         public Boolean endSession;
     }
 
-
     private static String getExistIntent(Iterator<String> iterator){
         String intent = null;
         while (iterator.hasNext()){
@@ -50,10 +46,10 @@ public class AliceController {
     }
 
     static {
-        FakeDB.alarms.add(new Alarm("23:58",10,
-                new Double[]{55.0, 37.0, 55.0, 37.1}
-                ,new boolean[]{true,true,true,true, true,true,true}
-                , true)); //for test
+//        DevelopDB.calendarEvents.add(new CalendarEvent("23:58",10,
+//                new Double[]{55.0, 37.0, 55.0, 37.1}
+//                ,new boolean[]{true,true,true,true, true,true,true}
+//                , true)); //for test
     }
 
     private static String processStringMinutes(long g){
@@ -95,7 +91,7 @@ public class AliceController {
                             .getJSONObject("mode")
                             .getString("value");
 
-                    long min = notification.responceForAlice(mode);
+                    long min = calculateRouterService.responceForAlice(mode);
 
                     if (min != 0) {
                         String format = processStringHours(min);
@@ -139,17 +135,17 @@ public class AliceController {
 
                     response.info.text = " установлен маршрут на " + time;
                     response.info.tts = " установлен маршрут на " + time;
-                    response.info.endSession = true;
+                    response.info.endSession = true     ;
 
-                    Random random = new Random();
 
-                    FakeDB.alarms.add(
-                            new Alarm(
+                    DevelopDB.calendarEvents.add(
+                            new CalendarEvent(
                                     time,
-                                    1000 + FakeDB.id++,
+                                    1000 + DevelopDB.id++,
                                     new Double[]{geoFrom[0],geoFrom[1],geo[0],geo[1]},
                                     new boolean[]{true,true,true,true,true,true,true},
-                                    true
+                                    true,
+                                    "Безымянное событие"
                             )
                     );
                     break;
